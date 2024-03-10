@@ -760,6 +760,8 @@ RUN \
   echo "**** compiling ffmpeg ****" && \
   cd /tmp/ffmpeg && \
     ./configure \
+    --enable-shared \
+    --disable-static \
     --disable-debug \
     --disable-doc \
     --disable-ffplay \
@@ -827,6 +829,15 @@ RUN \
   cp \
     /tmp/ffmpeg/ffprobe \
     /buildout/usr/local/bin && \
+  cp \
+    /tmp/ffmpeg/lib*/lib*.so* \
+    /buildout/usr/local/lib/ && \
+  cp \
+    /tmp/ffmpeg/lib*/lib*.pc \
+    /buildout/usr/local/lib/ && \
+  cp \
+    /tmp/ffmpeg/lib*/lib*.ver* \
+    /buildout/usr/local/lib/ && \
   cp -a \
     /usr/local/lib/lib*so* \
     /buildout/usr/local/lib/ && \
@@ -879,6 +890,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ENV \
   LIBVA_DRIVERS_PATH="/usr/local/lib/x86_64-linux-gnu/dri" \
   LD_LIBRARY_PATH="/usr/local/lib" \
+  PKG_CONFIG_PATH="/usr/local/lib" \
   NVIDIA_DRIVER_CAPABILITIES="compute,video,utility" \
   NVIDIA_VISIBLE_DEVICES="all"
 
@@ -886,6 +898,7 @@ RUN \
   echo "**** install runtime ****" && \
     apt-get update && \
     apt-get install -y \
+    pkg-config \
     libasound2 \
     libedit2 \
     libelf1 \
@@ -894,7 +907,6 @@ RUN \
     libgomp1 \
     libharfbuzz0b \
     libllvm15 \
-    libmpdec3 \
     libpciaccess0 \
     libv4l-0 \
     libwayland-client0 \
@@ -913,12 +925,12 @@ RUN \
     libxfixes3 \
     libxshmfence1 \
     libxml2 \
-    ocl-icd-libopencl1 && \
+    ocl-icd-libopencl1 \
+    libssl3 && \
   echo "**** clean up ****" && \
   rm -rf \
     /var/lib/apt/lists/* \
-    /var/tmp/*
+    /var/tmp/* && \
+  ldconfig
 
-COPY /root /
-
-ENTRYPOINT ["/ffmpegwrapper.sh"]
+ENTRYPOINT [ "/bin/sh" ]
