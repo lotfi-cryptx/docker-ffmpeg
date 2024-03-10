@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # build stage
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as buildstage
+FROM ubuntu:mantic as buildstage
 
 # set version label
 ARG FFMPEG_VERSION
@@ -9,7 +9,7 @@ ARG FFMPEG_VERSION
 # common env
 ENV \
   DEBIAN_FRONTEND="noninteractive" \
-  MAKEFLAGS="-j4"
+  MAKEFLAGS="-j8"
 
 # versions
 ENV \
@@ -54,6 +54,7 @@ ENV \
 
 RUN \
   echo "**** install build packages ****" && \
+  sed -i 's/# deb-src/deb-src/' /etc/apt/sources.list && \
   apt-get update && \ 
   apt-get install -y \
     autoconf \
@@ -92,27 +93,38 @@ RUN \
     ocl-icd-opencl-dev \
     perl \
     pkg-config \
+    python3 \
+    python-is-python3 \
+    python3-pip \
     python3-venv \
     wayland-protocols \
     x11proto-xext-dev \
     xserver-xorg-dev \
     xxd \
     yasm \
-    zlib1g-dev && \
-  apt-get build-dep mesa -y && \
+    zlib1g-dev \
+    curl \
+    jq && \
+  apt-get build-dep mesa -y
+
+RUN \
+  echo "**** install RUST ****" && \
   mkdir -p /tmp/rust && \
   RUST_VERSION=$(curl -fsX GET https://api.github.com/repos/rust-lang/rust/releases/latest | jq -r '.tag_name') && \
   curl -fo /tmp/rust.tar.gz -L "https://static.rust-lang.org/dist/rust-${RUST_VERSION}-x86_64-unknown-linux-gnu.tar.gz" && \
   tar xf /tmp/rust.tar.gz -C /tmp/rust --strip-components=1 && \
   cd /tmp/rust && \
   ./install.sh && \
-  cargo install cargo-c && \
+  cargo install cargo-c
+
+RUN \
+  echo "**** Setup Python ****" && \
   python3 -m venv /lsiopy && \
-  pip install -U --no-cache-dir \
+  pip3 install -U --no-cache-dir --break-system-packages \
     pip \
     setuptools \
     wheel && \
-  pip install --no-cache-dir meson cmake mako
+  pip3 install --no-cache-dir --break-system-packages meson cmake mako
 
 # compile 3rd party libs
 RUN \
@@ -511,6 +523,9 @@ RUN \
   echo "**** compiling shaderc ****" && \
   cd /tmp/shaderc && \
   ./utils/git-sync-deps && \
+  # Sometimes sync fails on low bandwith
+  ./utils/git-sync-deps && \
+  ./utils/git-sync-deps && \
   mkdir -p build && \
   cd build && \
   cmake -GNinja \
@@ -847,7 +862,7 @@ RUN \
     /buildout/etc/OpenCL/vendors/nvidia.icd
 
 # runtime stage
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy
+FROM ubuntu:mantic
 
 # Add files from binstage
 COPY --from=buildstage /buildout/ /
