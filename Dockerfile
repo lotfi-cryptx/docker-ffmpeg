@@ -807,70 +807,87 @@ RUN \
     --enable-vdpau \
     --enable-version3 \
     --enable-vulkan && \
-  make
+  make && \
+  make install
 
 RUN \
   echo "**** arrange files ****" && \
   /usr/local/lib/rustlib/uninstall.sh && \
   ldconfig && \
   mkdir -p \
-    /buildout/usr/local/bin \
-    /buildout/usr/local/lib/libmfx-gen \
-    /buildout/usr/local/lib/mfx \
-    /buildout/usr/local/lib/vpl \
-    /buildout/usr/local/lib/x86_64-linux-gnu/dri \
-    /buildout/usr/local/lib/x86_64-linux-gnu/vdpau \
-    /buildout/usr/local/share/vulkan \
-    /buildout/usr/share/libdrm \
-    /buildout/etc/OpenCL/vendors && \
-  cp \
-    /tmp/ffmpeg/ffmpeg \
-    /buildout/usr/local/bin && \
-  cp \
-    /tmp/ffmpeg/ffprobe \
-    /buildout/usr/local/bin && \
-  cp \
-    /tmp/ffmpeg/lib*/lib*.so* \
-    /buildout/usr/local/lib/ && \
-  cp \
-    /tmp/ffmpeg/lib*/lib*.pc \
-    /buildout/usr/local/lib/ && \
-  cp \
-    /tmp/ffmpeg/lib*/lib*.ver* \
-    /buildout/usr/local/lib/ && \
+  /buildout/usr/local/bin \
+  /buildout/usr/local/include \
+  /buildout/usr/local/lib \
+  /buildout/usr/local/lib/pkgconfig \
+  /buildout/usr/local/lib/libmfx-gen \
+  /buildout/usr/local/lib/mfx \
+  /buildout/usr/local/lib/vpl \
+  /buildout/usr/local/lib/x86_64-linux-gnu/dri \
+  /buildout/usr/local/lib/x86_64-linux-gnu/vdpau \
+  /buildout/usr/local/share/ffmpeg \
+  /buildout/usr/local/share/vulkan \
+  /buildout/usr/share/libdrm \
+  /buildout/etc/OpenCL/vendors && \
   cp -a \
-    /usr/local/lib/lib*so* \
-    /buildout/usr/local/lib/ && \
+  /usr/local/bin/ffmpeg \
+  /usr/local/bin/ffprobe \
+  /buildout/usr/local/bin && \
   cp -a \
-    /usr/local/lib/libmfx-gen/*.so \
-    /buildout/usr/local/lib/libmfx-gen/ && \
+  /usr/local/include/libavcodec \
+  /usr/local/include/libavdevice \
+  /usr/local/include/libavfilter \
+  /usr/local/include/libavformat \
+  /usr/local/include/libavutil \
+  /usr/local/include/libpostproc \
+  /usr/local/include/libswresample \
+  /usr/local/include/libswscale \
+  /buildout/usr/local/include && \
   cp -a \
-    /usr/local/lib/mfx/*.so \
-    /buildout/usr/local/lib/mfx/ && \
+  /usr/local/lib/pkgconfig/libavcodec* \
+  /usr/local/lib/pkgconfig/libavdevice* \
+  /usr/local/lib/pkgconfig/libavfilter* \
+  /usr/local/lib/pkgconfig/libavformat* \
+  /usr/local/lib/pkgconfig/libavutil* \
+  /usr/local/lib/pkgconfig/libpostproc* \
+  /usr/local/lib/pkgconfig/libswresample* \
+  /usr/local/lib/pkgconfig/libswscale* \
+  /buildout/usr/local/lib/pkgconfig && \
   cp -a \
-    /usr/local/lib/vpl/*.so \
-    /buildout/usr/local/lib/vpl/ && \
+  /usr/local/share/ffmpeg \
+  /buildout/usr/local/share/ffmpeg && \
   cp -a \
-    /usr/local/lib/x86_64-linux-gnu/lib*so* \
-    /buildout/usr/local/lib/x86_64-linux-gnu/ && \
+  /usr/local/lib/lib*so* \
+  /buildout/usr/local/lib/ && \
   cp -a \
-    /usr/local/lib/x86_64-linux-gnu/dri/*.so \
-    /buildout/usr/local/lib/x86_64-linux-gnu/dri/ && \
+  /usr/local/lib/libmfx-gen/*.so \
+  /buildout/usr/local/lib/libmfx-gen/ && \
   cp -a \
-    /usr/local/lib/x86_64-linux-gnu/vdpau/*.so \
-    /buildout/usr/local/lib/x86_64-linux-gnu/vdpau/ && \
+  /usr/local/lib/mfx/*.so \
+  /buildout/usr/local/lib/mfx/ && \
   cp -a \
-    /usr/lib/x86_64-linux-gnu/dri/i965* \
-    /buildout/usr/local/lib/x86_64-linux-gnu/dri/ && \
+  /usr/local/lib/vpl/*.so \
+  /buildout/usr/local/lib/vpl/ && \
   cp -a \
-    /usr/share/libdrm/amdgpu.ids \
-    /buildout/usr/share/libdrm/ && \
+  /usr/local/lib/x86_64-linux-gnu/lib*so* \
+  /buildout/usr/local/lib/x86_64-linux-gnu/ && \
   cp -a \
-    /usr/local/share/vulkan/* \
-    /buildout/usr/local/share/vulkan/ && \
+  /usr/local/lib/x86_64-linux-gnu/dri/*.so \
+  /buildout/usr/local/lib/x86_64-linux-gnu/dri/ && \
+  cp -a \
+  /usr/local/lib/x86_64-linux-gnu/vdpau/*.so \
+  /buildout/usr/local/lib/x86_64-linux-gnu/vdpau/ && \
+  cp -a \
+  /usr/lib/x86_64-linux-gnu/dri/i965* \
+  /buildout/usr/local/lib/x86_64-linux-gnu/dri/ && \
+  cp -a \
+  /usr/share/libdrm/amdgpu.ids \
+  /buildout/usr/share/libdrm/ && \
+  cp -a \
+  /usr/local/share/vulkan/* \
+  /buildout/usr/local/share/vulkan/ && \
   echo \
-    'libnvidia-opencl.so.1' > \
-    /buildout/etc/OpenCL/vendors/nvidia.icd
+  'libnvidia-opencl.so.1' > \
+  /buildout/etc/OpenCL/vendors/nvidia.icd
 
 # runtime stage
 FROM ubuntu:mantic
@@ -933,4 +950,4 @@ RUN \
     /var/tmp/* && \
   ldconfig
 
-ENTRYPOINT [ "/bin/sh" ]
+ENTRYPOINT [ "/bin/sh", "-c" ]
