@@ -889,8 +889,73 @@ RUN \
   'libnvidia-opencl.so.1' > \
   /buildout/etc/OpenCL/vendors/nvidia.icd
 
-# runtime stage
-FROM ubuntu:mantic
+
+# TensorRT runtime stage
+FROM nvcr.io/nvidia/tensorrt:24.02-py3 as tensorrt-runtime
+
+# Add files from binstage
+COPY --from=buildstage /buildout/ /
+
+# set version label
+ARG BUILD_DATE
+ARG VERSION
+LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="thelamer"
+
+ARG DEBIAN_FRONTEND="noninteractive"
+
+# hardware env
+ENV \
+  LIBVA_DRIVERS_PATH="/usr/local/lib/x86_64-linux-gnu/dri" \
+  LD_LIBRARY_PATH="/usr/local/lib" \
+  PKG_CONFIG_PATH="/usr/local/lib" \
+  NVIDIA_DRIVER_CAPABILITIES="compute,video,utility" \
+  NVIDIA_VISIBLE_DEVICES="all"
+
+RUN \
+  echo "**** install runtime ****" && \
+    apt-get update && \
+    apt-get install -y \
+    pkg-config \
+    libasound2 \
+    libedit2 \
+    libelf1 \
+    libexpat1 \
+    libglib2.0-0 \
+    libgomp1 \
+    libharfbuzz0b \
+    libllvm15 \
+    libpciaccess0 \
+    libv4l-0 \
+    libwayland-client0 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb-dri2-0 \
+    libxcb-dri3-0 \
+    libxcb-present0 \
+    libxcb-randr0 \
+    libxcb-shape0 \
+    libxcb-shm0 \
+    libxcb-sync1 \
+    libxcb-xfixes0 \
+    libxcb1 \
+    libxext6 \
+    libxfixes3 \
+    libxshmfence1 \
+    libxml2 \
+    ocl-icd-libopencl1 \
+    libssl3 && \
+  echo "**** clean up ****" && \
+  rm -rf \
+    /var/lib/apt/lists/* \
+    /var/tmp/* && \
+  ldconfig
+
+ENTRYPOINT [ "/bin/sh", "-c" ]
+
+
+# CPU runtime stage
+FROM ubuntu:mantic as cpu-runtime
 
 # Add files from binstage
 COPY --from=buildstage /buildout/ /
