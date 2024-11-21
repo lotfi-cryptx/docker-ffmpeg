@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # build stage
-FROM ubuntu:mantic as buildstage
+FROM ubuntu:22.04 as buildstage
 
 # set version label
 ARG FFMPEG_VERSION
